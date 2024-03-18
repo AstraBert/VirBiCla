@@ -1,0 +1,7 @@
+codon-bias==0.3.1
+biopython==1.81
+scikit-learn==1.2.2
+pandas==1.5.3
+scipy==1.12.0
+numpy==1.26.4
+matplotlib==3.7.2

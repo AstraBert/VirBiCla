@@ -4,7 +4,6 @@ from utils import *
 import pandas as pd
 
 
-## CSV structure: GENE_NAME,CAI,CHECKSUM,HIDROPHOBICITY,ISOELECTRIC,AROMATIC,INSTABLE,MW,HELIX,TURN,SHEET,MOL_EXT_RED,MOL_EXT_OX
 def load_data(infile):
     """Load data from infile if it is in fasta format (after having unzipped it, if it is zipped)"""
     if infile.endswith(".gz"):  # If file is gzipped, unzip it
@@ -42,14 +41,23 @@ def load_data(infile):
     else:
         raise ValueError("File is the wrong format")
 
+
 def df_from_listofdicts(listofdifcs: list):
     refdict = listofdifcs[0]
     keys = list(refdict.keys())
-    newdict = {key: [listofdifcs[i][key] for i in range(len(listofdifcs))] for key in keys}
+    newdict = {
+        key: [listofdifcs[i][key] for i in range(len(listofdifcs))] for key in keys
+    }
     df = pd.DataFrame.from_dict(newdict)
     return df
 
-MAPPING_DOMAINS={"train/16S_ribosomal_RNA": "NV", "train/28S_fungal_sequences": "NV", "train/SSU_eukaryote_rRNA": "NV", "train/ref_viruses_rep_genomes": "V"}
+
+MAPPING_DOMAINS = {
+    "train/16S_ribosomal_RNA": "NV",
+    "train/28S_fungal_sequences": "NV",
+    "train/SSU_eukaryote_rRNA": "NV",
+    "train/ref_viruses_rep_genomes": "V",
+}
 
 if __name__ == "__main__":
     csvpath = "train/viral-vs-nonviral_train.csv"
@@ -63,7 +71,7 @@ if __name__ == "__main__":
         c = 0
         for i in list(fasta.keys()):
             c += 1
-            domain=MAPPING_DOMAINS[fsa]
+            domain = MAPPING_DOMAINS[fsa]
             smalldict = process_dna(domain, fasta[i])
             hugelist.append(smalldict)
             if c % 500 == 0:

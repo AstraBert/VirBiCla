@@ -1,4 +1,4 @@
-for i in 16S_ribosomal_RNA 18S_fungal_sequences 28S_fungal_sequences LSU_eukaryote_rRNA SSU_eukaryote_rRNA LSU_prokaryote_rRNA ref_viruses_rep_genomes
+for i in 16S_ribosomal_RNA 18S_fungal_sequences 28S_fungal_sequences SSU_eukaryote_rRNA LSU_prokaryote_rRNA ref_viruses_rep_genomes
 do
     echo "Started with $i"
     bash ../shell/retrieve_blastdb.sh \

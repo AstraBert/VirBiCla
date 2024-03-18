@@ -20,7 +20,7 @@ while [ $# -gt 0 ]; do
     -h | --help)
         usage
         ;;
-    -db | --database) ######## <- new samples argument
+    -db | --database)
         db="$2"
         shift 2
         ;;
