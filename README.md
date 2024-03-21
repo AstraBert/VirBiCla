@@ -17,6 +17,8 @@ A novel ML-based binary classifier to tell viral and non-viral DNA/RNA sequences
   - [Data collection](#data-collection-1)
   - [Data processing](#data-processing-1)
   - [Tests](#tests)
+- [Use advices and limitations](#use-advices-and-limitations)
+- [Customization](#customization)
 - [License and right of usage](#license-and-right-of-usage)
 - [References](#references)
 
@@ -45,6 +47,13 @@ VirBiCla is an ensemble voting classifier model created using scikit-learn in py
 
 ### Usage
 Once trained, this ensemble classifier can be used to make predictions on new data by calling the `predict` method.
+
+You can use the model by running the [prediction script](./scripts/predict.py) as follows:
+
+```bash
+# make sure to include -p if you wish to get out a nice visualization of the viral/non-viral classification stats
+python3 predict.py -i input.fasta -o output.csv -p
+```
 
 ## Training
 ### Data collection
@@ -150,6 +159,48 @@ You can find the tests in the [dedicated notebook](./scripts/VirBiCla.ipynb).
     + **Accuracy:** 0.9911971830985915
 
 Overall, the models seems to perform well in telling viral and non-viral DNA sequences apart.
+
+## Use: advices and limitations
+<!-- User case in based on BioProject [PRJEB52499](https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJEB52499), from paper [*Characterizations of the Gut Bacteriome, Mycobiome, and Virome in Patients with Osteoarthritis*](https://journals.asm.org/doi/10.1128/spectrum.01711-22). -->
+
+User case for VirBiCla is [here](./user_case/).
+
+It is based on data downloaded from NCBI SRA, whose accession numbers are retained in their names, thus all the information about sequencing and related research are easily accesible.
+
+The three samples refer to _Aedes aegypti_'s virome ([SRR25317595](./user_case/SRR25317595_resized.fasta)), _Tuta absoluta_'s microbiome ([SRR20766474](./user_case/SRR20766474.fas)) and rRNA genes region from several fungi samples ([ERR2576718](./user_case/ERR2576718.fasta)).
+
+Size-selected virome (>1000 bp) was first combined with microbiome without any size restraint, and the resulting ca. 17000 reads were predicted by VirBiCla, resulting in [50% accuracy](./user_case/microbiome_notselected/). From the [confusion matrix](./user_case/microbiome_notselected/test.stats) you can easily see that the model predicted correctly almost all the actual viral sequences, whereas it misclassified the bacterial ones.
+
+When size-selected virome was combined with size-selected microbiome ([>1000 bp](./user_case/microbiome_selected/gt1000/) and [>1500 bp](./user_case/microbiome_selected/gt1500/)), progressively greater accuracy (53 and 60%) and better confusion matrices were observed (you can find them in test.stats files in each folder).
+
+When size-selected virome was combined with unprocessed mycetome (which had most of the sequences way longer than 2000 bp), [results](./user_case/microbiome_selected/gt2000/) were definitely better. VirBiCla yielded an almost perfect performance, with 98% accuracy and [few misclassfied sequences](./user_case/microbiome_selected/gt2000/test.stats).
+
+As a general advice, we suggest that the user employes the model "as is" only on long-read sequencing metagenomics samples: as you can see, VirBiCla is really good at differentiating between non-viral and viral sequences when put into a context of long reads (>2000-3000 bp). 
+
+## Customization
+
+If you have different data and you wish to custom VirBiCla for your needs, you need to follow these steps:
+
+1. Modify [preprocess_train.py](./scripts/preprocess_test.py), adding your own fasta files to the preprocessing pipeline. For example, let's say that we have two files called "virome.fa" and "microbiome.fa": we should then make these modifications:
+```python
+MAPPING_DOMAINS = {
+    "virome": "V",
+    "microbiome": "NV",
+}
+
+if __name__ == "__main__":
+    csvpath = "viral-vs-nonviral_train.csv"
+    hugelist = []
+    for fsa in list(MAPPING_DOMAINS.keys()):
+        print(f"Loading data from {fsa}...")
+        fastafile = f"{fsa}.fa"
+```
+2. Modify [model.py](./scripts/model.py) with your data. For example, let's say that we have saved our training data in a CSV file called "viral-vs-nonviral_train.csv": we should then make these modifications:
+```python
+df = pd.read_csv("viral-vs-nonviral_train.csv")
+X_train = df_train.iloc[:, 1:]
+y_train_rev = df_train["Domain"]
+```
 
 ## License and right of usage
 
